@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEDIDO COLMEIA V4.7 - ESTÁVEL</title>
+    <style>
+        :root { 
+            --cor-destaque: #007bff;
+            --cor-primaria: #004085;
+            --cor-fundo: #f4f7f9;
+            --cor-perigo: #ff4d4d;
+            --cor-oferta: #ffc107;
+            --cor-sucesso-claro: #e7f1ff;
+            --cor-indisponivel: #999;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--cor-fundo); padding: 15px; margin: 0; scroll-behavior: smooth; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 160px; }
+        
+        .logo-empresa { display: block; margin: 0 auto 10px auto; max-width: 180px; width: 100%; height: auto; }
+        h1 { text-align: center; color: var(--cor-primaria); margin-bottom: 20px; font-size: 1.5em; margin-top: 0; }
+        
+        .campo-dados { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
+        input[type="text"], input[type="date"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; font-family: inherit; }
+        
+        .sticky-header { position: sticky; top: 0; z-index: 100; background: white; padding: 10px 0; border-bottom: 1px solid #eee; }
+        #busca { border: 2px solid var(--cor-destaque); background-color: #f9f9f9; }
+
+        .categoria-titulo { 
+            background: var(--cor-sucesso-claro); color: var(--cor-primaria); padding: 12px 15px; border-radius: 8px; 
+            margin: 15px 0 5px 0; font-weight: bold; text-transform: uppercase; font-size: 0.85em; 
+            border-left: 5px solid var(--cor-destaque); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .categoria-titulo::after { content: '▼'; font-size: 0.8em; transition: 0.3s; }
+        .categoria-titulo.fechada::after { transform: rotate(-90deg); }
+        .categoria-corpo { display: block; }
+        .categoria-corpo.escondido { display: none; }
+
+        .produto { display: flex; flex-direction: column; padding: 15px 10px; border-bottom: 1px solid #eee; transition: 0.3s; border-radius: 8px; }
+        .produto.selecionado { background-color: #f0f7ff; border-left: 4px solid var(--cor-destaque); }
+        
+        .produto.em-oferta { background-color: #fffef0; border-left: 4px solid var(--cor-oferta); }
+        .badge-oferta { background: var(--cor-oferta); color: #856404; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; font-weight: bold; }
+
+        .produto.em-falta { opacity: 0.6; background-color: #f9f9f9; border-left: 4px solid var(--cor-indisponivel); }
+        .badge-falta { background: var(--cor-perigo); color: white; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; font-weight: bold; }
+
+        .produto-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .info { flex: 1; padding-right: 10px; }
+        .cod-prod { background: #eee; color: #666; font-size: 0.7em; padding: 2px 5px; border-radius: 4px; margin-right: 4px; }
+        .nome-prod { font-weight: bold; color: #333; display: block; margin-bottom: 4px; font-size: 1.05em;}
+        .badge-tipo { background: var(--cor-primaria); color: white; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; }
+        
+        .preco-principal { color: var(--cor-destaque); font-weight: bold; font-size: 1.15em; }
+        .em-oferta .preco-principal { color: #d9480f; } 
+        .preco-secundario { color: #777; font-size: 0.85em; display: block; margin-top: 2px; font-style: italic; }
+
+        input[type="number"] { width: 65px; padding: 10px; border-radius: 8px; border: 2px solid var(--cor-destaque); text-align: center; font-size: 16px; font-weight: bold; color: var(--cor-primaria); }
+        input[type="number"]:disabled { border-color: #ccc; background: #eee; color: #999; cursor: not-allowed; }
+
+        .rodape-fixo {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--cor-primaria); padding: 15px; box-sizing: border-box; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); z-index: 1000; display: flex; flex-direction: column; gap: 10px; border-radius: 20px 20px 0 0;
+        }
+        .total-info { display: flex; justify-content: space-between; align-items: center; color: white; }
+        .total-valor { font-size: 1.4em; font-weight: bold; }
+        .btn-enviar { width: 100%; background-color: var(--cor-destaque); color: white; border: none; padding: 15px; font-size: 1.1em; border-radius: 10px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #0056b3; }
+        
+        #btn-topo { display: none; position: fixed; bottom: 160px; right: 20px; z-index: 99; background: var(--cor-primaria); color: white; border-radius: 50%; width: 45px; height: 45px; border: none; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 90%; max-width: 450px; border-radius: 15px; max-height: 85vh; overflow-y: auto; box-sizing: border-box;}
+        
+        .btn-limpar { background-color: var(--cor-perigo); box-shadow: 0 4px 0 #b30000; padding: 10px; font-size: 0.8em; margin-top: 5px; border-radius: 8px; color: white; border: none; width: 100%; font-weight: bold;}
+        #carregando { text-align: center; color: #666; padding: 30px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<button id="btn-topo" onclick="irAoTopo()">⬆</button>
+
+<div class="container">
+    <img src="https://i.postimg.cc/Mp43sV46/LOGO-COLMEIA.png" alt="Logo da Empresa" class="logo-empresa">
+    <h1>🛒 PEDIDO COLMÉIA</h1>
+
+    <div class="campo-dados">
+        <label>Nome do Mercado/Cliente:</label>
+        <input type="text" id="cliente-nome" placeholder="Seu nome...">
+    </div>
+
+    <div class="campo-dados">
+        <label>Vendedor:</label>
+        <select id="vendedor-selecionado">
+            <option value="5516991251990">Vendedor Leandro</option>
+            <option value="5516981910138">Vendedor Marco</option>
+            <option value="5516999642784">Vendedor Gabriel</option>
+            <option value="5516997053840">Vendedor Gustavo</option>
+            <option value="5516996440327">Vendedor Marcio</option>
+            <option value="5516981910071">Vendedor Cafú</option>
+        </select>
+    </div>
+
+    <div class="campo-dados">
+        <label>Como deseja receber?</label>
+        <select id="tipo-entrega" onchange="toggleEndereco()">
+            <option value="Entrega">Receber na loja (Entrega)</option>
+            <option value="Ceasa">Retirar no Ceasa</option>
+        </select>
+    </div>
+
+    <div class="campo-dados">
+        <label>Data:</label>
+        <input type="date" id="data-pedido">
+    </div>
+
+    <div class="campo-dados" id="campo-endereco">
+        <label>Endereço de Entrega:</label>
+        <input type="text" id="cliente-endereco" placeholder="Endereço completo...">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+    <div class="sticky-header">
+        <input type="text" id="busca" placeholder="🔎 Buscar por nome ou código..." onkeyup="filtrarProdutos()">
+        <button class="btn-limpar" onclick="limparPedido()">🧹 LIMPAR QUANTIDADES</button>
+    </div>
+
+    <div id="carregando">⏳ Sincronizando produtos...</div>
+    <div id="lista-produtos"></div>
+</div>
+
+<div class="rodape-fixo">
+    <div class="total-info">
+        <span class="total-itens"><span id="qtd-itens">0</span> itens selecionados</span>
+        <span class="total-valor">R$ <span id="valor-total">0,00</span></span>
+    </div>
+    <button class="btn-enviar" onclick="revisarPedido()">🚀 REVISAR E ENVIAR</button>
+</div>
+
+<div id="modal-revisao" class="modal">
+    <div class="modal-content">
+        <h2 style="color: var(--cor-primaria);">Conferir Pedido</h2>
+        <div id="resumo-pedido"></div>
+        <div id="resumo-total" style="font-weight: bold; font-size: 1.2em; margin: 15px 0; text-align: right; color: var(--cor-destaque);"></div>
+        <button class="btn-enviar" onclick="confirmarEEnviar()">✅ ENVIAR AGORA</button>
+        <button onclick="fecharModal()" style="background: #888; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; margin-top: 10px; font-weight: bold;">❌ CORRIGIR</button>
+    </div>
+</div>
+
+<script>
+    const urlPlanilha = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS_P984gdvjs0uVTJWfTs9qwv6KIhbrtQCak0PW_LMnPDJ58JtzPy09jzVp1wzCPtTO1QvQ6hYApVsf/pub?gid=0&single=true&output=csv';
+
+    window.onload = () => {
+        if(localStorage.getItem('cliente-nome')) document.getElementById('cliente-nome').value = localStorage.getItem('cliente-nome');
+        if(localStorage.getItem('cliente-endereco')) document.getElementById('cliente-endereco').value = localStorage.getItem('cliente-endereco');
+        const hoje = new Date().toISOString().split('T')[0];
+        document.getElementById('data-pedido').setAttribute('min', hoje);
+        document.getElementById('data-pedido').value = hoje;
+        carregarProdutos();
+    };
+
+    window.onscroll = () => {
+        document.getElementById('btn-topo').style.display = (window.scrollY > 300) ? 'block' : 'none';
+    };
+    function irAoTopo() { window.scrollTo(0,0); }
+
+    function parseCSV(text) {
+        const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+        return text.split(/\r?\n/).map(line => line.split(regex));
+    }
+
+    async function carregarProdutos() {
+        const container = document.getElementById('lista-produtos');
+        const loader = document.getElementById('carregando');
+        try {
+            const resposta = await fetch(urlPlanilha);
+            const dadosTexto = await resposta.text();
+            const linhas = parseCSV(dadosTexto).slice(1); 
+            let catAtual = "";
+            let htmlGeral = "";
+
+            linhas.forEach(colunas => {
+                if (colunas.length < 3 || !colunas[2]) return;
+                const clean = (val) => (val || "").replace(/"/g, '').trim();
+                
+                const categoria = clean(colunas[0]);
+                const codigo = clean(colunas[1]);
+                const nome = clean(colunas[2]);
+                const preco = parseFloat(clean(colunas[3]).replace(',', '.')) || 0;
+                const tipo = clean(colunas[5]).toLowerCase() || 'un';
+                const precoKg = clean(colunas[6]) || '0,00';
+                
+                // Leitura segura das novas colunas
+                const disponivel = colunas[7] ? (clean(colunas[7]).toLowerCase() === 'sim') : true;
+                const oferta = colunas[8] ? (clean(colunas[8]).toLowerCase() === 'sim') : false;
+
+                if (categoria.toLowerCase() !== catAtual.toLowerCase() && categoria !== "") {
+                    if (catAtual !== "") htmlGeral += `</div>`; 
+                    catAtual = categoria;
+                    htmlGeral += `<div class="categoria-titulo fechada" onclick="toggleCategoria(this)">${catAtual}</div><div class="categoria-corpo escondido">`;
+                }
+
+                htmlGeral += `
+                    <div class="produto ${!disponivel ? 'em-falta' : ''} ${oferta && disponivel ? 'em-oferta' : ''}" id="prod-${codigo}" data-codigo="${codigo.toLowerCase()}" data-nome="${nome.toLowerCase()}">
+                        <div class="produto-header">
+                            <div class="info">
+                                <span class="nome-prod">
+                                    <small class="cod-prod">#${codigo}</small> ${nome} 
+                                    <span class="badge-tipo">${tipo}</span>
+                                    ${oferta && disponivel ? '<span class="badge-oferta">OFERTA 🔥</span>' : ''}
+                                    ${!disponivel ? '<span class="badge-falta">EM FALTA</span>' : ''}
+                                </span>
+                                <span class="preco-principal">R$ ${preco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                                <span class="preco-secundario">R$ ${precoKg} por ${(tipo === 'un' ? 'un' : 'Kg')}</span>
+                            </div>
+                            <input type="number" min="0" value="0" 
+                                ${!disponivel ? 'disabled placeholder="X"' : ''}
+                                data-nome-real="${nome}" data-preco="${preco}" data-tipo="${tipo}" data-cod-ref="${codigo}" oninput="atualizarEstado(this)">
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = htmlGeral + (catAtual !== "" ? "</div>" : "");
+        } catch (e) { 
+            console.error(e);
+            container.innerHTML = "⚠️ Erro ao carregar dados da planilha."; 
+        } finally { 
+            loader.style.display = 'none'; 
+        }
+    }
+
+    function toggleCategoria(el) {
+        el.classList.toggle('fechada');
+        el.nextElementSibling.classList.toggle('escondido');
+    }
+
+    function toggleEndereco() {
+        const tipo = document.getElementById('tipo-entrega').value;
+        document.getElementById('campo-endereco').style.display = (tipo === 'Ceasa') ? 'none' : 'block';
+    }
+
+    function atualizarEstado(input) {
+        const prod = document.getElementById(`prod-${input.getAttribute('data-cod-ref')}`);
+        if(prod) prod.classList.toggle('selecionado', parseFloat(input.value) > 0);
+        calcularTotal();
+    }
+
+    function limparPedido() {
+        if(confirm("Zerar todas as quantidades?")) {
+            document.querySelectorAll('.produto input[type="number"]').forEach(input => {
+                input.value = 0;
+                atualizarEstado(input);
+            });
+        }
+    }
+
+    function filtrarProdutos() {
+        const termo = document.getElementById('busca').value.toLowerCase();
+        document.querySelectorAll('.produto').forEach(p => {
+            const match = p.getAttribute('data-nome').includes(termo) || p.getAttribute('data-codigo').includes(termo);
+            p.style.display = match ? 'flex' : 'none';
+        });
+        document.querySelectorAll('.categoria-titulo').forEach(c => {
+            const corpo = c.nextElementSibling;
+            let tem = false;
+            corpo.querySelectorAll('.produto').forEach(prod => { if(prod.style.display !== 'none') tem = true; });
+            c.style.display = tem ? 'flex' : 'none';
+            if(tem && termo !== "") { c.classList.remove('fechada'); corpo.classList.remove('escondido'); }
+            else if (termo === "") { c.classList.add('fechada'); corpo.classList.add('escondido'); }
+        });
+    }
+
+    function calcularTotal() {
+        let total = 0, qtd = 0;
+        document.querySelectorAll('.produto input[type="number"]').forEach(i => {
+            const v = parseFloat(i.value) || 0;
+            if(v > 0) { total += (parseFloat(i.getAttribute('data-preco')) || 0) * v; qtd++; }
+        });
+        document.getElementById('valor-total').innerText = total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        document.getElementById('qtd-itens').innerText = qtd;
+    }
+
+    function revisarPedido() {
+        const nome = document.getElementById('cliente-nome').value;
+        if (!nome) { alert("Digite seu nome!"); return; }
+        localStorage.setItem('cliente-nome', nome);
+        localStorage.setItem('cliente-endereco', document.getElementById('cliente-endereco').value);
+
+        let html = "", total = 0, tem = false;
+        document.querySelectorAll('.produto').forEach(p => {
+            const i = p.querySelector('input[type="number"]');
+            const v = parseFloat(i.value) || 0;
+            if (v > 0) {
+                tem = true;
+                const pUnit = parseFloat(i.getAttribute('data-preco'));
+                const sub = v * pUnit;
+                total += sub;
+                html += `<div style="border-bottom: 1px dashed #eee; padding: 5px 0;"><b>${v}${i.getAttribute('data-tipo')}</b> - ${i.getAttribute('data-nome-real')}<br><small>Un: R$ ${pUnit.toLocaleString('pt-BR', {minimumFractionDigits:2})} | Sub: R$ ${sub.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</small></div>`;
+            }
+        });
+        if (!tem) { alert("Pedido vazio!"); return; }
+        document.getElementById('resumo-pedido').innerHTML = html;
+        document.getElementById('resumo-total').innerText = `TOTAL: R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('modal-revisao').style.display = 'block';
+    }
+
+    function fecharModal() { document.getElementById('modal-revisao').style.display = 'none'; }
+
+    function confirmarEEnviar() {
+        const fone = document.getElementById('vendedor-selecionado').value;
+        const nome = document.getElementById('cliente-nome').value;
+        const tipoEntrega = document.getElementById('tipo-entrega').value;
+        const data = document.getElementById('data-pedido').value.split('-').reverse().join('/');
+        let msg = `*NOVO PEDIDO - COLMÉIA* 📝\n👤 *Cliente:* ${nome}\n📅 *Data:* ${data}\n🚚 *Tipo:* ${tipoEntrega}\n`;
+        if (tipoEntrega === "Entrega") msg += `📍 *End:* ${document.getElementById('cliente-endereco').value}\n`;
+        msg += `\n*ÍTENS DO PEDIDO:* \n\n`;
+
+        document.querySelectorAll('.produto').forEach(p => {
+            const i = p.querySelector('input[type="number"]');
+            const v = parseFloat(i.value) || 0;
+            if (v > 0) {
+                const pUnit = parseFloat(i.getAttribute('data-preco'));
+                const sub = v * pUnit;
+                msg += `▪️ *${v}${i.getAttribute('data-tipo')}* - ${i.getAttribute('data-nome-real')} (R$ ${pUnit.toLocaleString('pt-BR', {minimumFractionDigits: 2})})\n`;
+                msg += `   Sub: R$ ${sub.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n`;
+                msg += `\n`;
+            }
+        });
+        msg += `💰 *TOTAL: R$ ${document.getElementById('valor-total').innerText}*`;
+        window.open(`https://wa.me/${fone}?text=${encodeURIComponent(msg)}`, '_blank');
+        fecharModal();
+    }
+</script>
+</body>
+</html>
