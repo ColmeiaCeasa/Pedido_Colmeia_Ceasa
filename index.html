@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PEDIDO COLMEIA V4.7 - ESTÁVEL</title>
+    <title>PEDIDO COLMEIA V4.8 - VISUAL AJUSTADO</title>
     <style>
         :root { 
             --cor-destaque: #007bff;
@@ -21,30 +21,45 @@
         .logo-empresa { display: block; margin: 0 auto 10px auto; max-width: 180px; width: 100%; height: auto; }
         h1 { text-align: center; color: var(--cor-primaria); margin-bottom: 20px; font-size: 1.5em; margin-top: 0; }
         
-        .campo-dados { margin-bottom: 12px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
-        input[type="text"], input[type="date"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; font-family: inherit; }
-        
+        .campo-dados { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; font-size: 0.9em; }
+
+        /* --- AJUSTE DOS CAMPOS DE ENTRADA --- */
+        input[type="text"], 
+        input[type="date"], 
+        select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            font-family: inherit; 
+            background-color: white !important; /* Força o fundo branco */
+            color: #333;
+            -webkit-appearance: none; /* Remove estilo padrão do iPhone */
+            appearance: none;
+            min-height: 48px; /* Padroniza a altura */
+        }
+
         .sticky-header { position: sticky; top: 0; z-index: 100; background: white; padding: 10px 0; border-bottom: 1px solid #eee; }
         #busca { border: 2px solid var(--cor-destaque); background-color: #f9f9f9; }
 
         .categoria-titulo { 
-            background: var(--cor-sucesso-claro); color: var(--cor-primaria); padding: 12px 15px; border-radius: 8px; 
+            background: var(--cor-sucesso-claro); color: var(--cor-primaria); padding: 14px 15px; border-radius: 8px; 
             margin: 15px 0 5px 0; font-weight: bold; text-transform: uppercase; font-size: 0.85em; 
             border-left: 5px solid var(--cor-destaque); cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .categoria-titulo::after { content: '▼'; font-size: 0.8em; transition: 0.3s; }
-        .categoria-titulo.fechada::after { transform: rotate(-90deg); }
+        .categoria-titulo::after { content: '▶'; font-size: 0.8em; transition: 0.3s; transform: rotate(90deg); }
+        .categoria-titulo.fechada::after { transform: rotate(0deg); }
         .categoria-corpo { display: block; }
         .categoria-corpo.escondido { display: none; }
 
         .produto { display: flex; flex-direction: column; padding: 15px 10px; border-bottom: 1px solid #eee; transition: 0.3s; border-radius: 8px; }
         .produto.selecionado { background-color: #f0f7ff; border-left: 4px solid var(--cor-destaque); }
-        
         .produto.em-oferta { background-color: #fffef0; border-left: 4px solid var(--cor-oferta); }
         .badge-oferta { background: var(--cor-oferta); color: #856404; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; font-weight: bold; }
-
         .produto.em-falta { opacity: 0.6; background-color: #f9f9f9; border-left: 4px solid var(--cor-indisponivel); }
         .badge-falta { background: var(--cor-perigo); color: white; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-left: 5px; font-weight: bold; }
 
@@ -58,7 +73,7 @@
         .em-oferta .preco-principal { color: #d9480f; } 
         .preco-secundario { color: #777; font-size: 0.85em; display: block; margin-top: 2px; font-style: italic; }
 
-        input[type="number"] { width: 65px; padding: 10px; border-radius: 8px; border: 2px solid var(--cor-destaque); text-align: center; font-size: 16px; font-weight: bold; color: var(--cor-primaria); }
+        input[type="number"] { width: 65px; padding: 10px; border-radius: 8px; border: 2px solid var(--cor-destaque); text-align: center; font-size: 16px; font-weight: bold; color: var(--cor-primaria); background: white; -webkit-appearance: none;}
         input[type="number"]:disabled { border-color: #ccc; background: #eee; color: #999; cursor: not-allowed; }
 
         .rodape-fixo {
@@ -86,12 +101,12 @@
     <h1>🛒 PEDIDO COLMÉIA</h1>
 
     <div class="campo-dados">
-        <label>Nome do Mercado/Cliente:</label>
-        <input type="text" id="cliente-nome" placeholder="Seu nome...">
+        <label>Seu Nome ou Mercado:</label>
+        <input type="text" id="cliente-nome" placeholder="Digite aqui...">
     </div>
 
     <div class="campo-dados">
-        <label>Vendedor:</label>
+        <label>Vendedor Responsável:</label>
         <select id="vendedor-selecionado">
             <option value="5516991251990">Vendedor Leandro</option>
             <option value="5516981910138">Vendedor Marco</option>
@@ -103,7 +118,7 @@
     </div>
 
     <div class="campo-dados">
-        <label>Como deseja receber?</label>
+        <label>Forma de Recebimento:</label>
         <select id="tipo-entrega" onchange="toggleEndereco()">
             <option value="Entrega">Receber na loja (Entrega)</option>
             <option value="Ceasa">Retirar no Ceasa</option>
@@ -111,13 +126,13 @@
     </div>
 
     <div class="campo-dados">
-        <label>Data:</label>
+        <label>Data da Entrega/Retirada:</label>
         <input type="date" id="data-pedido">
     </div>
 
     <div class="campo-dados" id="campo-endereco">
-        <label>Endereço de Entrega:</label>
-        <input type="text" id="cliente-endereco" placeholder="Endereço completo...">
+        <label>Endereço Completo:</label>
+        <input type="text" id="cliente-endereco" placeholder="Rua, número, bairro...">
     </div>
 
     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
@@ -192,7 +207,6 @@
                 const tipo = clean(colunas[5]).toLowerCase() || 'un';
                 const precoKg = clean(colunas[6]) || '0,00';
                 
-                // Leitura segura das novas colunas
                 const disponivel = colunas[7] ? (clean(colunas[7]).toLowerCase() === 'sim') : true;
                 const oferta = colunas[8] ? (clean(colunas[8]).toLowerCase() === 'sim') : false;
 
